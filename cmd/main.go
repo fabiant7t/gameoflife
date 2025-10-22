@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -47,6 +48,32 @@ func (b *board) Initialize() {
 			b.matrix[i][j] = cell
 		}
 	}
+}
+
+func (b *board) Save(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	for i := range b.matrix {
+		for j := range len(b.matrix[i]) {
+			cell := b.matrix[i][j]
+			if cell.isAlive {
+				if _, err := f.WriteString("1"); err != nil {
+					return err
+				}
+			} else {
+				if _, err := f.WriteString("0"); err != nil {
+					return err
+				}
+			}
+		}
+		if _, err := f.WriteString("\n"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *board) Neighbours() [][]uint8 {
@@ -136,6 +163,7 @@ func NewBoard(rows, columns int) *board {
 		b.matrix[i] = make([]Cell, columns)
 	}
 	b.Initialize()
+	b.Save("first.gen")
 	return b
 }
 
